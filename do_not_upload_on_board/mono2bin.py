@@ -6,7 +6,7 @@ height = 528            #fill
 width = 880             #fill
 buf = [0xFF] * (int(width / 8) * height)
 
-image = Image.open(os.path.join('plan_red.bmp'))
+image = Image.open(os.path.join('osk.bmp'))
 image_monocolor = image.convert('1')
 imwidth, imheight = image_monocolor.size
 pixels = image_monocolor.load()
@@ -23,3 +23,7 @@ elif(imwidth == height and imheight == width):
             newy = height - x - 1
             if pixels[x, y] == 0:
                 buf[int((newx + newy*width) / 8)] &= ~(0x80 >> (y % 8))
+
+print(len(buf))
+print(buf)
+print(bytearray(buf))

@@ -112,21 +112,21 @@ class EPD:
     def display(self, imageblack, imagered):
         self._command(0x4F)
         self._data(0xAf)
-        
-        self._command(0x24)
-        for i in range(0, int(self.width * self.height / 8)):
-            self._data(imageblack[i])
-        
+
         self._command(0x26)
         for i in range(0, int(self.width * self.height / 8)):
             self._data(~imagered[i])
-        
+
+        self._command(0x24)
+        for i in range(0, int(self.width * self.height / 8)):
+            self._data(imageblack[i])
+            
         self._command(0x22)
         self._data(0xC7)
         self._command(0x20)
         sleep_ms(200)
         self.wait_until_idle()
-
+        
 
     def Clear(self, color):
         if color == "black":
@@ -135,7 +135,7 @@ class EPD:
         elif color == "red":
             c24 = 0xff
             c26 = 0xff
-        else:
+        elif color == "white":
             c24 = 0xff
             c26 = 0x00
 
@@ -163,7 +163,6 @@ class EPD:
             return
         if (self.rotate == 0):
             self.set_absolute_pixel(frame_buffer, x, y, colored)
-
 
 
     def set_absolute_pixel(self, frame_buffer, x, y, colored):
@@ -195,6 +194,7 @@ class EPD:
         for index in range(len(text)):
             self.draw_char_at(frame_buffer, refcolumn, y, text[index], font, colored)
             refcolumn += font.width
+
 
     def draw_horizontal_line(self, frame_buffer, x, y, width, colored):
         for i in range(x, x + width):
@@ -231,7 +231,20 @@ class EPD:
             for j in range(self.width//8):
                 framebuffer[i*self.width//8 + j] = pic_array[i*self.width//8 + j]
 
+
     def draw_small_picture(self, framebuffer, pic_array, x, y, pic_height, pic_width):
         for i in range(pic_height):
             for j in range(pic_width//8):
-                framebuffer[(i+y)*self.width//8 + j + x] = pic_array[i*pic_width//8 + j]
+                framebuffer[(i+y)*self.width//8 + j + x//8] = pic_array[i*pic_width//8 + j]
+
+    def display_text(self, frame, x, y, data, font):
+        display_word = ""
+        index = 0
+        for word in data.split():
+            if len(display_word) > int(x*(-0.05)+48):
+                self.display_string_at(frame, x, y+index*30, display_word, font, 1)
+                display_word = word + " "
+                index += 1
+            else:
+                display_word += word + " " 
+        self.display_string_at(frame, x, y+index*30, display_word, font, 1)
